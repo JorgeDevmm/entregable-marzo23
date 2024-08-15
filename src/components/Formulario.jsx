@@ -1,62 +1,100 @@
 import PropTypes from 'prop-types';
 import Error from './Error';
-
+import Correcto from './Correcto';
 import { useState, useEffect } from 'react';
 
 const Formulario = ({ eventos, setEventos, evento, setEvento }) => {
   const [nombre, setNombre] = useState('');
   const [contacto, setContacto] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  const [error, setError] = useState(false);
+  // Efecto para cargar los datos del evento cuando se edita
+  useEffect(() => {
+    if (Object.keys(evento).length > 0) {
+      setNombre(evento.nombre);
+      setContacto(evento.contacto);
+    }
+  }, [evento]);
 
-
-  // validación de campos del formulario
+  // Validación de campos del formulario
   const handleSubmit = (e) => {
     e.preventDefault();
 
     // Validación del Formulario
     if ([nombre, contacto].includes('')) {
-      setError(true);
+      setError('Por favor chequea que la información sea correcta.');
+      setSuccess('');
       return;
     }
 
-    setError(false);
+    if (nombre.length > 3) {
+      setError('El nombre debe tener igual o menos de 3 caracteres.');
+      setSuccess('');
+      return;
+    }
+
+    if (contacto.length <= 6) {
+      setError('El contacto debe tener más de 6 caracteres.');
+      setSuccess('');
+      return;
+    }
+
+    // Si pasa las validaciones
+    setError('');
+    setSuccess('Formulario enviado correctamente.');
 
     // Objeto de Evento
     const objetoEvento = {
+      id: evento.id ? evento.id : new Date().getTime(),
       nombre,
       contacto,
-
     };
 
+    if (evento.id) {
+      // Editando un evento existente
+      const eventosActualizados = eventos.map((ev) =>
+        ev.id === evento.id ? objetoEvento : ev
+      );
+      setEventos(eventosActualizados);
+      setEvento({});
+    } else {
+      // Agregando un nuevo evento
+      setEventos([...eventos, objetoEvento]);
+    }
 
-    // reiniciando el formulario
+    // Reiniciando el formulario
     setNombre('');
     setContacto('');
   };
 
   return (
-    <div className='bg-[#353737] md:w-100 lg:w-100 rounded-l-lg '>
-
+    <div className='bg-[#353737] rounded-l-lg min-h-screen flex flex-col items-center justify-center'>
       <h1 className='text-center pt-2 text-xl lg:text-4xl font-bold text-white'>
         FORMULARIO
       </h1>
       <p className='text-center text-lg mt-2 text-white mb-2'>
         INGRESAR NOMBRE Y {''}
-        <span className='text-rose-600 font-bold '> EVENTO</span>
+        <span className='text-rose-600 font-bold'> EVENTO</span>
       </p>
 
       <form
-        onSubmit={handleSubmit} /*asociar función a evento*/
+        onSubmit={handleSubmit}
         action=''
-        className=' text-white shadow-md py-5 px-5 md:w-4/5 lg:w-11/12 mx-auto rounded-xl'
+        className='text-white shadow-md py-5 px-5 md:w-3/4 lg:w-3/5 mx-auto rounded-xl'
       >
-        {/* validando error y aplicando props tipo children */}
+        {/* Mostrar mensaje de error o éxito */}
         {error && (
           <Error>
-            <p>Por favor chequea que la información sea correcta</p>
+            <p>{error}</p>
           </Error>
         )}
+        {success && (
+          <Correcto>
+            <p>{success}</p>
+          </Correcto>
+        )}
+
         <div className='mb-3'>
           <label htmlFor='nombre' className='font-bold block text-stone-300'>
             Ingresar Nombre
@@ -85,19 +123,17 @@ const Formulario = ({ eventos, setEventos, evento, setEvento }) => {
           />
         </div>
 
-
         <input
           type='submit'
-          className='py-3 bg-[#2D44F5] text-white font-bold text-lg rounded-lg inline-block  w-full hover:bg-[#2c76ffef] transition-colors'
-          // valida el value de que mostrar de acuerdo si existe el id
-          value={evento.id = 'Enviar'}
+          className='py-3 bg-[#2D44F5] text-white font-bold text-lg rounded-lg inline-block w-full hover:bg-[#2c76ffef] transition-colors'
+          value={evento.id ? 'Editar Evento' : 'Enviar'}
         />
       </form>
     </div>
   );
 };
 
-// documentación prop
+// Documentación prop
 Formulario.propTypes = {
   eventos: PropTypes.array.isRequired,
   setEventos: PropTypes.func.isRequired,

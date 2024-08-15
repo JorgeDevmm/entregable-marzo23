@@ -13,8 +13,8 @@ function App() {
 
   return (
 
-    <div className='bg-[#030303] h-full'>
-    <div className=' md:full container mx-auto '>
+    <div className='bg-[#030303] h-auto min-h-screen flex flex-col items-center'>
+    <div className='container mx-auto '>
       <Formulario
         //props
         eventos={eventos}
